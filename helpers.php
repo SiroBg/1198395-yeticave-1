@@ -158,3 +158,21 @@ function formatPrice(int $price): string
         )
         . '<b class="rub">р</b>';
 }
+
+/**
+ * Принимает будущую дату и вычисляет, сколько осталось целых часов и минут до этой даты от текущей
+ * @param string $date Будущая дата в строковом формате (ГГГГ-ММ-ДД)
+ * @return array Массив, в котором первый элемент - часы, второй - минуты
+ */
+function getDtRange (string $date) : array
+{
+    $currentDate = date_create("now");
+    $endDate = date_create($date);
+    $dateDiff = date_diff($currentDate, $endDate);
+
+    $resultHours = str_pad($dateDiff->h, 2, '0', STR_PAD_LEFT);
+
+    $minutesLeft = str_pad($dateDiff->i, 2, '0', STR_PAD_LEFT);
+
+    return [$resultHours, $minutesLeft];
+}
