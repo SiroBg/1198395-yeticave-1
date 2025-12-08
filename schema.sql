@@ -1,5 +1,5 @@
 CREATE DATABASE IF NOT EXISTS yeticave
-       DEFAULT CHARACTER SET UTF8MB4
+       DEFAULT CHARACTER SET utf8mb4
        DEFAULT COLLATE utf8mb4_general_ci;
 
 USE yeticave;
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS lots (
   date_exp DATE NOT NULL,
   bid_step INT UNSIGNED NOT NULL,
   user_id INT UNSIGNED NOT NULL,
-  winner_id INT UNSIGNED,
+  winner_id INT UNSIGNED NULL,
   cat_id INT UNSIGNED NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (winner_id) REFERENCES users(id),
@@ -46,4 +46,7 @@ CREATE TABLE IF NOT EXISTS bids (
   FOREIGN KEY (lot_id) REFERENCES lots(id)
 );
 
+CREATE INDEX u_date ON users(created_at);
+CREATE INDEX l_date ON lots(created_at);
 CREATE INDEX l_name ON lots(name);
+CREATE INDEX b_date ON bids(created_at);

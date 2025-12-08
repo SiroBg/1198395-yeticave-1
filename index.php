@@ -10,7 +10,6 @@ require_once __DIR__ . '/helpers.php';
  * @var $includeTemplate ;
  */
 
-
 $isAuth = rand(0, 1);
 
 $userName = 'Борис'; // укажите здесь ваше имя
@@ -86,6 +85,7 @@ $products = [
         'expireDate' => '2025-12-01'
     ],
 ];
+
 $pageContent = includeTemplate(
     'main.php',
     [
