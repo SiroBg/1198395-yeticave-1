@@ -2,10 +2,11 @@
 
 /**
  * Создаёт соединение с БД. Завершает работу сценария, если возникает ошибка соединения к БД.
- * @param array Массив с настройками БД.
+ * @param array $config Массив с настройками БД.
  * @return mysqli Готовое соединение.
  */
-function createConnection(array $config): mysqli {
+function createConnection(array $config): mysqli
+{
     $connection = mysqli_connect($config['host'], $config['user'], $config['password'], $config['database']);
 
     if (!$connection) {
@@ -18,10 +19,11 @@ function createConnection(array $config): mysqli {
 
 /**
  * Устанавливает юникод 'utf8mb4'. Завершает сценарий при ошибке.
- * @param mysqli Готовое соединение.
+ * @param mysqli $connection Готовое соединение.
  * @return void
  */
-function setUnicode(mysqli $connection): void {
+function setUnicode(mysqli $connection): void
+{
     if (!mysqli_set_charset($connection, 'utf8mb4')) {
         printf("Ошибка при загрузке набора символов utf8mb4: %s\n", mysqli_error($connection));
         die();
@@ -30,19 +32,16 @@ function setUnicode(mysqli $connection): void {
 
 /**
  * Получает данные из БД и возвращает их в виде многомерного массива. Завершает сценарий при ошибке.
- * @param mysqli Готовое соединение.
- * @param string Запрос к БД.
+ * @param mysqli $connection Готовое соединение.
+ * @param string $query Запрос к БД.
  * @return array Данные из БД в виде массива.
  */
-function getData(mysqli $connection, string $query): array {
-    $resultArray = [];
-
+function getData(mysqli $connection, string $query): array
+{
     if (!$result = mysqli_query($connection, $query)) {
         printf("Ошибка при загрузке данных из БД: %s\n", mysqli_error($connection));
         die();
     }
 
-    $resultArray = mysqli_fetch_all($result, MYSQLI_ASSOC);
-
-    return $resultArray;
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }

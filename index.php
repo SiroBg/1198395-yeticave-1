@@ -7,15 +7,15 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/init.php';
 
 /**
- * @var $includeTemplate;
- * @var $isAuth;
- * @var $userName;
- * @var $createConnection;
- * @var $setUnicode;
- * @var $getData;
- * @var $queryGetRecentLots;
- * @var $queryGetCategories;
- * @var $config;
+ * @var $includeTemplate ;
+ * @var $isAuth ;
+ * @var $userName ;
+ * @var $createConnection ;
+ * @var $setUnicode ;
+ * @var $getData ;
+ * @var $queryGetRecentLots ;
+ * @var $queryGetCategories ;
+ * @var $config ;
  */
 
 $connection = createConnection($config);
