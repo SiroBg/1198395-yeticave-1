@@ -53,7 +53,7 @@
             </nav>
         </div>
     </header>
-    <main class="container"><?= $pageContent; ?></main>
+    <?= $pageContent; ?>
 </div>
 <footer class="main-footer">
     <nav class="nav">
