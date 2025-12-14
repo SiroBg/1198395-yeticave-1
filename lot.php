@@ -18,7 +18,7 @@ if (!file_exists(__DIR__ . '/config.php')) {
 }
 $config = require __DIR__ . '/config.php';
 
-$connection = $createConnection($config['db']);
+$connection = createConnection($config['db']);
 $cats = getAllCats($connection);
 $lotId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 $pageTitle = '';
