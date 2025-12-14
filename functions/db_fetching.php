@@ -17,7 +17,7 @@ function createConnection(array $config): mysqli
 
 
     if (!$connection) {
-        error_log(mysqli_connection_error());
+        error_log(mysqli_connect_error());
         exit('Ошибка соединения с базой данных.');
     }
 
@@ -49,8 +49,8 @@ function setUnicode(mysqli $connection): void
 function getRecentLots(mysqli $connection): array
 {
     $query = 'SELECT lots.*, cats.name AS category '
-    . 'FROM lots JOIN cats ON lots.cat_id = cats.id '
-    . 'ORDER BY lots.created_at DESC LIMIT 6';
+        . 'FROM lots JOIN cats ON lots.cat_id = cats.id '
+        . 'ORDER BY lots.created_at DESC LIMIT 6';
 
     return getData($connection, $query);
 }
@@ -90,16 +90,35 @@ function getData(mysqli $connection, string $query): array
  * @param mysqli $connection Готовое соединение.
  * @param int $id Id лота.
  *
- * @return array Данные из БД в виде массива.
+ * @return array|null Данные из БД в виде массива.
  */
-function getLotById(mysqli $connection, int $id): array
+function getLotById(mysqli $connection, int $id): array|null
 {
-    $query = 'SELECT lots.*, cats.name, MAX(bids.amount) '
-            . 'FROM lots JOIN cats ON lots.cat_id = cats.id '
-            . 'LEFT JOIN bids ON lots.id = bids.lot_id '
-            . 'WHERE lots.id = ' . $id . ' '
-            . 'GROUP BY bids.amount, lots.id';
+    $query = 'SELECT lots.*, cats.name AS category, MAX(bids.amount) AS max_price '
+        . 'FROM lots JOIN cats ON lots.cat_id = cats.id '
+        . 'LEFT JOIN bids ON lots.id = bids.lot_id '
+        . 'WHERE lots.id = ' . $id . ' '
+        . 'GROUP BY lots.id';
 
+    if (!$result = mysqli_query($connection, $query)) {
+        error_log(mysqli_error($connection));
+        exit('Ошибка при получении данных.');
+    }
+    return mysqli_fetch_assoc($result);
+}
+
+/**
+ * Получает данные о ставках для лота по его id, отсортированные по дате
+ * @param mysqli $connection Ресурс соединения
+ * @param int $id Id лота
+ *
+ * @return array Массив со ставками
+ */
+function getBidsByLotId(mysqli $connection, int $id): array
+{
+    $query = 'SELECT bids.*, users.name AS user_name FROM bids '
+        . 'JOIN users ON bids.user_id = users.id WHERE bids.lot_id = ' . $id
+        . ' ORDER BY bids.created_at DESC LIMIT 10';
     return getData($connection, $query);
 }
 

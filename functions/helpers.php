@@ -51,9 +51,40 @@ function getNounPluralForm(int $number, string $one, string $two, string $many):
     $mod100 = $number % 100;
 
     return match (true) {
+        $number >= 2 && $number <= 4 => $two,
         $mod100 >= 11 && $mod100 <= 20, $mod10 > 5, $mod10 == 0 => $many,
-        $mod10 === 1 => $one,
-        $mod10 >= 2 && $mod10 <= 4 => $two
+        $mod10 === 1 => $one
+    };
+}
+
+/**
+ * Принимает дату и вычисляет, сколько времени прошло после нее. В зависимости от количества времени, возвращает результат
+ * в разном формате:
+ *  - больше суток - дату и время создания
+ *  - меньше часа - количество прошедших минут
+ *  - больше часа  - количество часов
+ * @param string $date Дата в строковом формате (ГГГГ-ММ-ДД)
+ * @param DateTime $currentDate Текущая дата
+ *
+ * @return string Прошедшее время с указанной даты
+ */
+function handleTimePassedAfterDate(string $date, DateTime $currentDate): string
+{
+    try {
+        $createdAt = date_create($date);
+    } catch (Throwable $e) {
+        error_log($e->getMessage());
+        return $currentDate->format('Y-m-d H:i');
+    }
+
+    $dateDiff = $createdAt->diff($currentDate);
+
+    return match (true) {
+        $dateDiff->d > 0, $createdAt > $currentDate => $createdAt->format('d.m.y в H:i'),
+        $dateDiff->h === 1 => 'Час назад',
+        $dateDiff->i === 1 => 'Минуту назад',
+        $dateDiff->h < 1 => $dateDiff->i . ' ' . getNounPluralForm($dateDiff->i, 'минуту', 'минуты', 'минут') . ' назад',
+        default => $dateDiff->h . ' ' . getNounPluralForm($dateDiff->h, 'час', 'часа', 'часов') . ' назад',
     };
 }
 
@@ -97,12 +128,11 @@ function formatPrice(int $price): string
 /**
  * Принимает будущую дату и вычисляет, сколько осталось целых часов и минут до этой даты от текущей
  * @param string $date Будущая дата в строковом формате (ГГГГ-ММ-ДД)
+ * @param DateTime $currentDate Текущая дата
  * @return string[] Массив, в котором первый элемент - часы, второй - минуты
  */
-function getDtRange(string $date): array
+function getDtRange(string $date, DateTime $currentDate): array
 {
-    $currentDate = date_create();
-
     try {
         $endDate = date_create($date);
     } catch (Throwable $e) {
