@@ -1,10 +1,10 @@
 <?php
 /**
- * @var $pageTitle
- * @var $isAuth
- * @var $userName
- * @var $pageContent
- * @var $cats
+ * @var $pageTitle ;
+ * @var $isAuth ;
+ * @var $userName ;
+ * @var $pageContent ;
+ * @var $navContent ;
  */
 
 ?>
@@ -14,6 +14,7 @@
 <head>
     <meta charset="UTF-8">
     <title><?= $pageTitle; ?></title>
+    <link href="/css/flatpickr.min.css" rel="stylesheet">
     <link href="/css/normalize.min.css" rel="stylesheet">
     <link href="/css/style.css" rel="stylesheet">
 </head>
@@ -29,7 +30,7 @@
                 <input type="search" name="search" placeholder="Поиск лота">
                 <input class="main-header__search-btn" type="submit" name="find" value="Найти">
             </form>
-            <a class="main-header__add-lot button" href="/pages/add-lot.html">Добавить лот</a>
+            <a class="main-header__add-lot button" href="/add.php">Добавить лот</a>
 
             <nav class="user-menu">
 
@@ -41,14 +42,14 @@
                         <a class="user-menu__logout" href="#">Выход</a>
                     </div>
                 <?php else : ?>
-                <ul class="user-menu__list">
-                    <li class="user-menu__item">
-                        <a href="#">Регистрация</a>
-                    </li>
-                    <li class="user-menu__item">
-                        <a href="#">Вход</a>
-                    </li>
-                </ul>
+                    <ul class="user-menu__list">
+                        <li class="user-menu__item">
+                            <a href="#">Регистрация</a>
+                        </li>
+                        <li class="user-menu__item">
+                            <a href="#">Вход</a>
+                        </li>
+                    </ul>
                 <?php endif; ?>
             </nav>
         </div>
@@ -56,16 +57,7 @@
     <?= $pageContent; ?>
 </div>
 <footer class="main-footer">
-    <nav class="nav">
-        <ul class="nav__list container">
-            <!--заполните этот список из массива категорий-->
-            <?php foreach ($cats as $cat) : ?>
-                <li class="nav__item">
-                    <a href="/pages/all-lots.html"><?= $cat['name']; ?></a>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    </nav>
+    <?= $navContent; ?>
     <div class="main-footer__bottom container">
         <div class="main-footer__copyright">
             <p>© 2019, YetiCave</p>
@@ -109,7 +101,7 @@
                 </svg>
             </a>
         </div>
-        <a class="main-footer__add-lot button" href="/add-lot.html">Добавить лот</a>
+        <a class="main-footer__add-lot button" href="/add.php">Добавить лот</a>
         <div class="main-footer__developed-by">
             <span class="visually-hidden">Разработано:</span>
             <a class="logo-academy" href="https://htmlacademy.ru/intensive/php">
