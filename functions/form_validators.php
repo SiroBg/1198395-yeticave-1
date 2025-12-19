@@ -1,6 +1,54 @@
 <?php
 
 /**
+ * Выполняет аутентификацию пользователя.
+ * @param string $email Почта пользователя.
+ * @param callable $getUser Функция получения данных о пользователе для сверки логина и пароля.
+ * @param mysqli $connection Ресурс соединения.
+ *
+ * @return array Ассоциативный массив. Первый ключ - успешно/неуспешно пройденная аутентификация (булево значение). Второй ключ - данные пользователя при успехе, ошибки при неудаче.
+ */
+function authUser(string $email, callable $getUser, $connection): array
+{
+    $userInfo = $getUser($connection, $email);
+    $success = password_verify($formInputs['password'], $userInfo['password']);
+
+    $errors =
+        [
+            'email' => 'Вы ввели неверный email/пароль',
+            'password' => 'Вы ввели неверный email/пароль'
+        ];
+
+    $data = $success ? $userInfo : $errors;
+
+    return
+        [
+            'success' => $success,
+            'data' => $data
+        ];
+}
+
+/**
+ * Принимает данные формы входа на сайт, проверяет их и собирает ошибки в массив.
+ * @param array $formInputs Массив данных из формы регистрации.
+ *
+ * @return array Массив выявленных ошибок в форме.
+ */
+function validateFormLogin(array $formInputs): array {
+    $rules =
+        [
+            'email' => function ($value) {
+                return filter_var($value, FILTER_VALIDATE_EMAIL) ? '' : 'Введите email в корректном формате.';
+            },
+            'password' => function ($value) {
+                return validateTextLength($value, 8, 128);
+            }
+        ];
+
+    return validateForm($formInputs, $rules);
+}
+
+/**
  * Принимает данные формы регистрации на сайте, проверяет их и собирает ошибки в массив.
  * @param array $fromInputs Массив данных из формы регистрации.
  * @param callable $isEmailUnique Функция проверки уникальности введенного email.

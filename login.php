@@ -1,16 +1,15 @@
 <?php
 
-
 require_once __DIR__ . '/init.php';
 
 /**
  * @var $connection ;
- * @var $isAuth ;
  * @var $userName ;
  * @var $getAllCats ;
  * @var $includeTemplate ;
- * @var $isEmailUnique ;
- * @var $addUser ;
+ * @var $authUser ;
+ * @var $getUser ;
+ * @var $validateFormLogin ;
  */
 
 $cats = getAllCats($connection);
@@ -18,24 +17,26 @@ $pageData = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formInputs = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS, true);
+    $errors = validateFormLogin($formInputs);
 
-    $errors = validateFormSignUp($formInputs, isEmailUnique(...), $connection);
+    if (empty($errors)) {
+        $authData = authUser($formInputs, getUser(...), $connection);
 
-    if (!empty($errors)) {
-        $pageData +=
-            [
-                'formInputs' => $formInputs,
-                'errors' => $errors
-            ];
-    } else {
-        if (!addUser($connection, $formInputs)) {
-            error_log(mysqli_error($connection));
-            exit('Не удалось отправить данные на сервер.');
+        if ($authData['success']) {
+            session_start();
+            $_SESSION['user'] = $authData['data'];
+            header('Location:/index.php');
+            exit();
         }
 
-        header('Location:/login.php');
-        exit();
+        $errors = $authData['data'];
     }
+
+    $pageData +=
+        [
+            'formInputs' => $formInputs,
+            'errors' => $errors
+        ];
 }
 
 $navContent = includeTemplate(
@@ -48,7 +49,7 @@ $navContent = includeTemplate(
 $pageData['navContent'] = $navContent;
 
 $pageContent = includeTemplate(
-    'sign-up.php',
+    'login.php',
     $pageData
 );
 
@@ -57,9 +58,7 @@ $layoutContent = includeTemplate(
     [
         'navContent' => $navContent,
         'pageContent' => $pageContent,
-        'userName' => $userName,
         'pageTitle' => '"Yeticave" - Регистрация.',
-        'isAuth' => $isAuth
     ]
 );
 

@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit('Не удалось отправить данные на сервер.');
         }
 
-        header('Location:lot.php?id=' . $lotId);
+        header('Location:/lot.php?id=' . $lotId);
         exit();
     }
 }

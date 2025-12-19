@@ -143,6 +143,24 @@ function addLot(mysqli $connection, array $formInputs): int|false
 }
 
 /**
+ * Получает информацию о пользователе по переданному email.
+ * @var mysqli $connection Ресурс соединения.
+ * @var string $email Строка с email.
+ *
+ * @return array|false Данные о пользователе или false, если пользователь не найден.
+ */
+function getUser(mysqli $connection, string $email): array
+{
+    $query = 'SELECT * FROM users WHERE users.email = "' . $email . '"';
+    if (!$result = mysqli_query($connection, $query)) {
+        error_log(mysqli_error($connection));
+        exit('Ошибка при получении данных.');
+    }
+
+    return mysqli_fetch_assoc($result) ?? false;
+}
+
+/**
  * Проверяет, есть ли в БД переданный email.
  * @return bool True, если такого email еще нет, false - если уже есть.
  * @var mysqli $connection Ресурс соединения.
