@@ -12,18 +12,9 @@ require_once __DIR__ . '/init.php';
  */
 
 $cats = getAllCats($connection);
-$pageData = [];
 
 if (isset($_SESSION['user'])) {
-    $pageTitle = '403 Вы уже вошли в аккаунт';
-
-    $templateName = 'error.php';
-    $pageData['errorTitle'] = $pageTitle;
-    $pageData['errorMessage'] = 'Вы уже выполнили вход на сайт';
-    http_response_code(403);
-} else {
-    $pageTitle = 'Вход';
-    $templateName = 'login.php';
+    showError(403, 'Вы уже выполнили вход на сайт', $cats);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -36,25 +27,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    $pageData +=
-        [
-            'formInputs' => $formInputs,
-            'errors' => $validStatus['errors']
-        ];
+    $errors = $validStatus['errors'];
 }
 
 $navContent = includeTemplate(
     'nav.php',
     [
-        'cats' => $cats
-    ]
+        'cats' => $cats,
+    ],
 );
 
-$pageData['navContent'] = $navContent;
-
 $pageContent = includeTemplate(
-    $templateName,
-    $pageData
+    'login.php',
+    [
+        'navContent' => $navContent,
+        'formInputs' => $formInputs ?? [],
+        'errors' => $errors ?? [],
+    ],
 );
 
 $layoutContent = includeTemplate(
@@ -62,8 +51,8 @@ $layoutContent = includeTemplate(
     [
         'navContent' => $navContent,
         'pageContent' => $pageContent,
-        'pageTitle' => '"Yeticave" - ' . $pageTitle,
-    ]
+        'pageTitle' => '"Yeticave" - Вход',
+    ],
 );
 
 print($layoutContent);

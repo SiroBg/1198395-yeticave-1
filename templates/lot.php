@@ -66,9 +66,9 @@
                                 <td class="history__name"><?= $bid['user_name']; ?></td>
                                 <td class="history__price"><?= formatPrice($bid['amount']); ?></td>
                                 <td class="history__time"><?= getTimePassedAfterDate(
-                                        $bid['created_at'],
-                                        new DateTime()
-                                    ); ?></td>
+                                    $bid['created_at'],
+                                    new DateTime(),
+                                ); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </table>

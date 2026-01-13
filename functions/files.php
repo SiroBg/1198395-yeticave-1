@@ -22,7 +22,7 @@ function uploadImg(string $filename): array
         $acceptedTypes =
             [
                 'image/jpeg' => '.jpg',
-                'image/png' => '.png'
+                'image/png' => '.png',
             ];
 
         if (!isset($acceptedTypes[$fileType])) {
@@ -45,6 +45,6 @@ function uploadImg(string $filename): array
     return [
         'success' => empty($error) && !empty($imgPath),
         'error' => $error,
-        'imgPath' => $imgPath
+        'imgPath' => $imgPath,
     ];
 }

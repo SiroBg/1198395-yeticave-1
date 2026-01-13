@@ -10,18 +10,9 @@ require_once __DIR__ . '/init.php';
  */
 
 $cats = getAllCats($connection);
-$pageData = [];
 
 if (isset($_SESSION['user'])) {
-    $pageTitle = '403 Вы уже зарегистрированы';
-
-    $templateName = 'error.php';
-    $pageData['errorTitle'] = $pageTitle;
-    $pageData['errorMessage'] = 'Чтобы зарегистрировать нового пользователя, выйдите из текущего аккаунта';
-    http_response_code(403);
-} else {
-    $pageTitle = 'Регистрация';
-    $templateName = 'sign-up.php';
+    showError(403, 'Чтобы зарегистрировать нового пользователя, выйдите из текущего аккаунта', $cats);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -29,35 +20,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $errors = validateFormSignUp($formInputs, $connection);
 
-    if (!empty($errors)) {
-        $pageData +=
-            [
-                'formInputs' => $formInputs,
-                'errors' => $errors
-            ];
-    } else {
-        if (!addUser($connection, $formInputs)) {
-            error_log(mysqli_error($connection));
-            exit('Не удалось отправить данные на сервер.');
+    if (empty($errors)) {
+        $success = addUser($connection, $formInputs);
+        if ($success) {
+            header('Location:/login.php');
+            exit();
+        } else {
+            exit('При сохранении данных произошла ошибка.');
         }
-
-        header('Location:/login.php');
-        exit();
     }
 }
 
 $navContent = includeTemplate(
     'nav.php',
     [
-        'cats' => $cats
-    ]
+        'cats' => $cats,
+    ],
 );
 
-$pageData['navContent'] = $navContent;
-
 $pageContent = includeTemplate(
-    $templateName,
-    $pageData
+    'sign-up.php',
+    [
+        'navContent' => $navContent,
+        'formInputs' => $formInputs ?? [],
+        'errors' => $errors ?? [],
+    ],
 );
 
 $layoutContent = includeTemplate(
@@ -65,8 +52,8 @@ $layoutContent = includeTemplate(
     [
         'navContent' => $navContent,
         'pageContent' => $pageContent,
-        'pageTitle' => '"Yeticave" - ' . $pageTitle,
-    ]
+        'pageTitle' => '"Yeticave" - Регистрация.',
+    ],
 );
 
 print($layoutContent);

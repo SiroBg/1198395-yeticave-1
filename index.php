@@ -15,16 +15,16 @@ $cats = getAllCats($connection);
 $navContent = includeTemplate(
     'nav.php',
     [
-        'cats' => $cats
-    ]
+        'cats' => $cats,
+    ],
 );
 
 $pageContent = includeTemplate(
     'main.php',
     [
         'lots' => $lots,
-        'cats' => $cats
-    ]
+        'cats' => $cats,
+    ],
 );
 
 $layoutContent = includeTemplate(
@@ -33,7 +33,7 @@ $layoutContent = includeTemplate(
         'navContent' => $navContent,
         'pageContent' => $pageContent,
         'pageTitle' => '"Yeticave" - Главная страница',
-    ]
+    ],
 );
 
 print($layoutContent);

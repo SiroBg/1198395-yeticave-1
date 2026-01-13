@@ -25,7 +25,7 @@ function validateFormLogin(array $formInputs, mysqli $connection): array
             },
             'password' => function ($value) {
                 return validateTextLength($value, 8, 128);
-            }
+            },
         ];
 
     $result['errors'] = validateForm($formInputs, $rules);
@@ -44,7 +44,7 @@ function validateFormLogin(array $formInputs, mysqli $connection): array
         $result['errors'] =
             [
                 'email' => 'Вы ввели неверный email/пароль',
-                'password' => 'Вы ввели неверный email/пароль'
+                'password' => 'Вы ввели неверный email/пароль',
             ];
     }
 
@@ -73,7 +73,7 @@ function validateFormSignUp(array $fromInputs, mysqli $connection): array
             },
             'message' => function ($value) {
                 return validateEmptyText($value);
-            }
+            },
         ];
 
     $errors = validateForm($fromInputs, $rules);
@@ -113,7 +113,7 @@ function validateFormAddLot(array $formInputs, array $cats): array
             },
             'category' => function ($value) use ($cats) {
                 return validateCategory($value, $cats);
-            }
+            },
         ];
 
     return validateForm($formInputs, $rules);

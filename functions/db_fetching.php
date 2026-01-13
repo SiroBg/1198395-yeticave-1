@@ -15,7 +15,6 @@ function createConnection(array $config): mysqli
         exit('Ошибка соединения с базой данных.');
     }
 
-
     if (!$connection) {
         error_log(mysqli_connect_error());
         exit('Ошибка соединения с базой данных.');
@@ -190,7 +189,11 @@ function addUser(mysqli $connection, array $formInputs): bool
     $formInputs['password'] = password_hash($formInputs['password'], PASSWORD_DEFAULT);
 
     $stmt = dbGetPrepareStmt($connection, $query, $formInputs);
-    return mysqli_stmt_execute($stmt);
+    if (!mysqli_stmt_execute($stmt)) {
+        error_log(mysqli_error($connection));
+        return false;
+    }
+    return true;
 }
 
 /**
