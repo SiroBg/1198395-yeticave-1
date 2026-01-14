@@ -5,6 +5,7 @@
  * @var string $text ;
  * @var array $lots ;
  * @var int $pages ;
+ * @var int $page ;
  */
 
 ?>
@@ -46,17 +47,21 @@
         <?php endif ; ?>
     </ul>
     </section>
-    <?php if (!empty($lots)) : ?>
+    <?php if (!empty($lots) && $pages > 1) : ?>
     <ul class="pagination-list">
-        <?php while ($pages > 0) : ?>
-        <li class="pagination-item pagination-item-prev"><a>Назад</a></li>
-        <li class="pagination-item pagination-item-active"><a>1</a></li>
-        <li class="pagination-item"><a href="#">2</a></li>
-        <li class="pagination-item"><a href="#">3</a></li>
-        <li class="pagination-item"><a href="#">4</a></li>
-        <li class="pagination-item pagination-item-next"><a href="#">Вперед</a></li>
-        <?php $pages -= 1 ; ?>
+        <li class="pagination-item pagination-item-prev">
+            <a href="<?= "/search.php?search=$text&page=" . ($page > 1 ? $page - 1 : $page) ; ?>">Назад</a>
+        </li>
+        <?php $i = 1 ; ?>
+        <?php while ($i <= $pages) : ?>
+        <li class="pagination-item <?= $page === $i ? 'pagination-item-active' : '' ; ?>">
+            <a href="<?= "/search.php?search=$text&page=$i" ; ?>"><?= $i ; ?></a>
+        </li>
+        <?php $i += 1 ; ?>
         <?php endwhile ; ?>
+        <li class="pagination-item pagination-item-next">
+            <a href="<?= "/search.php?search=$text&page=" . ($page < $pages ? $page + 1 : $page) ; ?>">Вперед</a>
+        </li>
     </ul>
     <?php endif ; ?>
 </div>

@@ -20,13 +20,17 @@ if (empty($text)) {
     exit();
 }
 
-$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
-$page = $page ? $page : 1;
-
+$lotsPerPage = 9;
 $lotsAmount = getLotsAmount($connection, $text);
-$pages = (int)ceil($lotsAmount / 10);
+$pages = (int)ceil($lotsAmount / $lotsPerPage);
 
-$lots = search($connection, $text, $page, 10);
+$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+
+if (!$page || $page < 1 || $page > $pages) {
+    $page = 1;
+}
+
+$lots = search($connection, $text, $page, $lotsPerPage);
 
 $navContent = includeTemplate(
     'nav.php',
@@ -42,6 +46,7 @@ $pageContent = includeTemplate(
         'text' => $text,
         'lots' => $lots,
         'pages' => $pages,
+        'page' => $page,
     ],
 );
 
