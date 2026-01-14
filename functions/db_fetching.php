@@ -267,3 +267,30 @@ function dbGetPrepareStmt(mysqli $link, string $sql, array $data = []): mysqli_s
 
     return $stmt;
 }
+
+function getLotsAmount(mysqli $connection, string $text): int
+{
+    $query = 'SELECT COUNT(*) FROM lots WHERE MATCH lots.name, lots.description AGAINST (?)';
+
+    $stmt = dbGetPrepareStmt($connection, $query, [ $text ]);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $result = mysqli_fetch_assoc($result);
+
+    return (int)$result;
+}
+
+function search(mysqli $connection, string $text, int $page, int $limit): array
+{
+    $offset = ($page - 1) * $limit;
+    $query = 'SELECT lots.*, cats.name AS category FROM lots JOIN cats ON lots.cat_id = cats.id WHERE MATCH lots.name, lots.description AGAINST (?) LIMIT '
+            . $limit . ' OFFSET ' . $offset;
+
+    $stmt = dbGetPrepareStmt($connection, $query, [ $text ]);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+    $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+    return $result;
+}
