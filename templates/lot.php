@@ -4,7 +4,11 @@
  * @var array $lot ;
  * @var string $navContent ;
  * @var array $bids ;
- * @var array|false $user ;
+ * @var int $price ;
+ * @var int $minBid ;
+ * @var bool $showBids ;
+ * @var array $formInputs ;
+ * @var array $errors ;
  */
 
 ?>
@@ -27,7 +31,7 @@
                 <p class="lot-item__description"><?= $lot['description']; ?></p>
             </div>
             <div class="lot-item__right">
-                <?php if ($user !== false): ?>
+                <?php if ($showBids): ?>
                 <div class="lot-item__state">
                     <?php [$hours, $minutes] = getDtRange($lot['date_exp'], new DateTime()); ?>
                     <div class="lot-item__timer <?= (int)$hours === 0 ? 'timer--finishing' : ''; ?>  timer">
@@ -36,24 +40,25 @@
                     <div class="lot-item__cost-state">
                         <div class="lot-item__rate">
                             <span class="lot-item__amount">Текущая цена</span>
-                            <?php $lotCurrentPrice = $lot['max_price'] ?? $lot['price']; ?>
-                            <span class="lot-item__cost"><?= formatPrice($lotCurrentPrice); ?></span>
+                            <span class="lot-item__cost"><?= formatPrice($price); ?></span>
                         </div>
                         <div class="lot-item__min-cost">
-                            Мин. ставка <span><?= formatPrice((int)$lotCurrentPrice + (int)$lot['bid_step']); ?></span>
+                            Мин. ставка <span><?= formatPrice($minBid); ?></span>
                         </div>
                     </div>
                     <form
                         class="lot-item__form"
-                        action="https://echo.htmlacademy.ru"
+                        action="/lot.php?id=<?= $lot['id'] ; ?>"
                         method="post"
                         autocomplete="off"
                     >
-                        <p class="lot-item__form-item form__item form__item--invalid">
+                        <p class="lot-item__form-item form__item <?= empty($errors) ? '' : 'form__item--invalid' ; ?>">
                             <label for="cost">Ваша ставка</label>
                             <input id="cost" type="text" name="cost"
-                                   placeholder="<?= (int)$lotCurrentPrice + (int)$lot['bid_step']; ?>"/>
-                            <span class="form__error">Введите наименование лота</span>
+                                   placeholder="<?= $minBid ; ?>" value="<?= empty($formInputs) ? '' : $formInputs['cost'] ; ?>"/>
+                            <?php if (!empty($errors)): ?>
+                            <span class="form__error"><?= $errors['cost'] ; ?></span>
+                            <?php endif ; ?>
                         </p>
                         <button type="submit" class="button">Сделать ставку</button>
                     </form>

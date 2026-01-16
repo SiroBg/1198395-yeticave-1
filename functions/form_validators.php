@@ -124,6 +124,18 @@ function validateFormAddLot(array $formInputs, array $cats): array
     return validateForm($formInputs, $rules);
 }
 
+function validateFormBids(array $formInputs, int $minBid): array
+{
+    $rules =
+        [
+            'cost' => function ($value) use ($minBid) {
+                return (int)$value < $minBid ? 'Минимальная ставка ' . $minBid . ' р.' : null;
+            },
+        ];
+
+    return validateForm($formInputs, $rules);
+}
+
 /**
  * Принимает данные формы и словарь с правилами-валидаторами для нее. Применяет для каждого поля свой валидатор и собирает ошибки в массив.
  * @param array $formInputs Массив данных из формы.

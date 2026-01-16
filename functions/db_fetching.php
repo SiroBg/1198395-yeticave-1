@@ -210,11 +210,7 @@ function addUser(mysqli $connection, array $formInputs): bool
     $formInputs['password'] = password_hash($formInputs['password'], PASSWORD_DEFAULT);
 
     $stmt = dbGetPrepareStmt($connection, $query, $formInputs);
-    if (!mysqli_stmt_execute($stmt)) {
-        error_log(mysqli_error($connection));
-        return false;
-    }
-    return true;
+    return mysqli_stmt_execute($stmt);
 }
 
 /**
@@ -309,4 +305,33 @@ function search(mysqli $connection, string $text, int $page, int $limit): array
     $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
     return $result;
+}
+
+/**
+ * Добавляет ставку к лоту.
+ * @param mysqli $connection Ресурс соединения.
+ * @param array $values Массив из величины ставки, id лота и пользователя.
+ * @return bool `true` - ставка добавлена, `false` - при ошибке.
+ */
+function addBid(mysqli $connection, array $values): bool
+{
+    $query = 'INSERT INTO bids (amount, user_id, lot_id) VALUES (?, ?, ?)';
+    $stmt = dbGetPrepareStmt($connection, $query, $values);
+    return mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Получает ставки пользователя по его id.
+ * @param mysqli $connection Ресурс соединения.
+ * @param int $id Id пользователя.
+ * @return array Массив с информацией о ставках.
+ */
+function getUserBids(mysqli $connection, int $id): array
+{
+    $query = 'SELECT bids.*, lots.created_at AS lot_created, lots.name, lots.img_url, lots.date_exp, lots.winner_id, cats.name AS category, users.contacts FROM bids '
+            . 'JOIN lots ON lots.id = bids.lot_id '
+            . 'JOIN cats ON lots.cat_id = cats.id '
+            . 'JOIN users ON users.id = lots.user_id WHERE bids.user_id = ' . $id . ' '
+            . 'ORDER BY bids.created_at DESC';
+    return getData($connection, $query);
 }

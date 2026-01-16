@@ -29,9 +29,9 @@ function getNounPluralForm(int $number, string $one, string $two, string $many):
     $mod100 = $number % 100;
 
     return match (true) {
-        $number >= 2 && $number <= 4 => $two,
-        $mod100 >= 11 && $mod100 <= 20, $mod10 > 5, $mod10 == 0 => $many,
+        $mod100 >= 11 && $mod100 <= 20, $mod10 >= 5, $mod10 === 0 => $many,
         $mod10 === 1 => $one,
+        default => $two,
     };
 }
 
