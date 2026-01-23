@@ -2,7 +2,7 @@
 
 /**
  * @var string $navContent ;
- * @var string $text ;
+ * @var string $searchInfo ;
  * @var array $lots ;
  * @var int $pages ;
  * @var int $page ;
@@ -13,7 +13,16 @@
 <?= $navContent ; ?>
 <div class="container">
     <section class="lots">
-    <h2>Результаты поиска по запросу «<span><?= $text !== false ? htmlspecialchars($text) : '' ; ?></span>»</h2>
+    <?php if ($searchInfo['isCatValid'] && $searchInfo['isTextValid']) : ?>
+    <?php $searchLink = '/search.php?search=' . htmlspecialchars($searchInfo['text']) . '&cat=' . $searchInfo['catId'] ; ?>
+    <h2>Все лоты в категории «<?= $searchInfo['catName'] ?>» по запросу «<span><?= htmlspecialchars($searchInfo['text']) ; ?></span>»</h2>
+    <?php elseif ($searchInfo['isCatValid']) : ?>
+    <?php $searchLink = '/search.php?&cat=' . $searchInfo['catId'] ; ?>
+    <h2>Все лоты в категории «<?= $searchInfo['catName'] ?>»</h2>
+    <?php else : ?>
+    <?php $searchLink = '/search.php?search=' . htmlspecialchars($searchInfo['text']) ; ?>
+    <h2>Результаты поиска по запросу «<span><?= htmlspecialchars($searchInfo['text']) ; ?></span>»</h2>
+    <?php endif ; ?>
     <ul class="lots__list">
         <?php if (empty($lots)) : ?>
         <p>Ничего не найдено по вашему запросу.</p>
@@ -50,17 +59,18 @@
     <?php if ($pages > 1) : ?>
     <ul class="pagination-list">
         <li class="pagination-item pagination-item-prev">
-            <a href="<?= "/search.php?search=$text&page=" . ($page > 1 ? $page - 1 : $page) ; ?>">Назад</a>
+            <a href="<?= $searchLink . '&page=' . ($page > 1 ? $page - 1 : $page) ; ?>">Назад</a>
         </li>
         <?php $i = 1 ; ?>
+        <?php $page = $page ? $page : 1 ; ?>
         <?php while ($i <= $pages) : ?>
         <li class="pagination-item <?= $page === $i ? 'pagination-item-active' : '' ; ?>">
-            <a href="<?= "/search.php?search=$text&page=$i" ; ?>"><?= $i ; ?></a>
+            <a href="<?= $searchLink . '&page=' . $i ; ?>"><?= $i ; ?></a>
         </li>
         <?php $i += 1 ; ?>
         <?php endwhile ; ?>
         <li class="pagination-item pagination-item-next">
-            <a href="<?= "/search.php?search=$text&page=" . ($page < $pages ? $page + 1 : $page) ; ?>">Вперед</a>
+            <a href="<?= $searchLink . '&page=' . ($page < $pages ? $page + 1 : $page) ; ?>">Вперед</a>
         </li>
     </ul>
     <?php endif ; ?>

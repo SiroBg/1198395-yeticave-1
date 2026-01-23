@@ -4,15 +4,21 @@ require_once __DIR__ . '/init.php';
 
 /**
  * @var $connection ;
- * @var $getRecentLots ;
  * @var $getAllCats ;
  * @var $includeTemplate ;
  * @var $getAuthUser ;
+ * @var $getUserBids ;
+ * @var $showError ;
  */
 
-$lots = getRecentLots($connection);
 $cats = getAllCats($connection);
 $user = getAuthUser($connection);
+
+if ($user === false) {
+    showError(403, 'Войдите, чтобы посмотреть свои ставки.', $cats, $user);
+}
+
+$bids = getUserBids($connection, $user['id']);
 
 $navContent = includeTemplate(
     'nav.php',
@@ -22,10 +28,11 @@ $navContent = includeTemplate(
 );
 
 $pageContent = includeTemplate(
-    'main.php',
+    'my-bets.php',
     [
-        'lots' => $lots,
-        'cats' => $cats,
+        'bids' => $bids,
+        'user' => $user,
+        'navContent' => $navContent,
     ],
 );
 
@@ -34,7 +41,7 @@ $layoutContent = includeTemplate(
     [
         'navContent' => $navContent,
         'pageContent' => $pageContent,
-        'pageTitle' => '"Yeticave" - Главная страница',
+        'pageTitle' => '"Yeticave" - Мои ставки.',
         'user' => $user,
     ],
 );

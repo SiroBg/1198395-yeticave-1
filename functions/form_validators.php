@@ -1,6 +1,44 @@
 <?php
 
 /**
+ * Проверяет данные поискового запроса.
+ * @param string|false $text Текст запроса.
+ * @param string|false $catId Id категории.
+ * @param array $cats Список категорий.
+ * @return array Массив с данными валидации.
+ */
+function validateSearch(string|false $text, string|false $catId, array $cats): array
+{
+    $result =
+    [
+        'isTextValid' => false,
+        'text' => null,
+        'isCatValid' => false,
+        'catName' => null,
+        'catId' => null,
+    ];
+
+    $text = $text ? trim($text) : '';
+
+    if (!empty($text)) {
+        $result['isTextValid'] = true;
+        $result['text'] = $text;
+    }
+
+    if ($catId) {
+        foreach ($cats as $cat) {
+            if ((int)$cat['id'] === (int)$catId) {
+                $result['isCatValid'] = true;
+                $result['catName'] = $cat['name'];
+                $result['catId'] = (int)$catId;
+            }
+        }
+    }
+
+    return $result;
+}
+
+/**
  * Принимает данные формы входа на сайт, проверяет их и собирает ошибки в массив.
  * @param array $formInputs Массив данных из формы входа.
  * @param mysqli $connection Ресурс соединения. Нужен для сверки логина/пароля с БД.
@@ -118,6 +156,25 @@ function validateFormAddLot(array $formInputs, array $cats): array
             },
             'category' => function ($value) use ($cats) {
                 return validateCategory($value, $cats);
+            },
+        ];
+
+    return validateForm($formInputs, $rules);
+}
+
+/**
+ * Принимает данные формы добавления ставки, проверяет их и собирает ошибки в массив.
+ * @param array $formInputs Массив данных из формы.
+ * @param int $minBid Минимальная ставка.
+ *
+ * @return array Массив выявленных ошибок в форме.
+ */
+function validateFormBids(array $formInputs, int $minBid): array
+{
+    $rules =
+        [
+            'cost' => function ($value) use ($minBid) {
+                return (int)$value < $minBid ? 'Минимальная ставка ' . $minBid . ' р.' : null;
             },
         ];
 

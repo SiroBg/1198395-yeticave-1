@@ -29,9 +29,9 @@ function getNounPluralForm(int $number, string $one, string $two, string $many):
     $mod100 = $number % 100;
 
     return match (true) {
-        $number >= 2 && $number <= 4 => $two,
-        $mod100 >= 11 && $mod100 <= 20, $mod10 > 5, $mod10 == 0 => $many,
+        $mod100 >= 11 && $mod100 <= 20, $mod10 >= 5, $mod10 === 0 => $many,
         $mod10 === 1 => $one,
+        default => $two,
     };
 }
 
@@ -176,4 +176,22 @@ function showError(int $code, string $message, array $cats, array|false $user): 
     http_response_code($code);
     print($layoutContent);
     exit();
+}
+
+/**
+ * Вычисляет, показывать ставки на странице или нет.
+ * @param array|false $user Залогинен ли пользователь. Если нет, ставки не показываются.
+ * @param array $lot Информация о лоте. Если истек срок ставок или лот уже был выигран, ставки не показываются.
+ * @param array $bids Информация о ставках. Если последняя ставка была сделана залогиненым пользователем, ставки не показываются.
+ */
+function showBids(array|false $user, array $lot, array $bids)
+{
+    [$hours, $minutes] = getDtRange($lot['date_exp'], new DateTime());
+    $isExp = $hours === '00' && $minutes === '00';
+    $result = $user !== false && !$isExp && (int)$user['id'] !== (int)$lot['user_id'] && !isset($lot['winner_id']);
+    if (isset($bids[0])) {
+        $result = $result && (int)$user['id'] !== (int)$bids[0]['user_id'];
+    }
+
+    return $result;
 }

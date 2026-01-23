@@ -210,11 +210,7 @@ function addUser(mysqli $connection, array $formInputs): bool
     $formInputs['password'] = password_hash($formInputs['password'], PASSWORD_DEFAULT);
 
     $stmt = dbGetPrepareStmt($connection, $query, $formInputs);
-    if (!mysqli_stmt_execute($stmt)) {
-        error_log(mysqli_error($connection));
-        return false;
-    }
-    return true;
+    return mysqli_stmt_execute($stmt);
 }
 
 /**
@@ -271,14 +267,15 @@ function dbGetPrepareStmt(mysqli $link, string $sql, array $data = []): mysqli_s
 /**
  * Получает общее количество найденных активных лотов, подходящих под запрос.
  * @param mysqli $connection Ресурс соединения.
- * @param string $text Текст запроса.
+ * @param string $searchQuery Запрос.
+ * @param array $value Значение запроса.
  * @return int Количество лотов.
  */
-function getLotsAmount(mysqli $connection, string $text): int
+function getLotsAmount(mysqli $connection, string $searchQuery, array $values): int
 {
-    $query = 'SELECT COUNT(lots.id) AS amount FROM lots WHERE MATCH lots.name, lots.description AGAINST (?) AND lots.date_exp > CURDATE()';
+    $query = 'SELECT COUNT(lots.id) AS amount FROM lots WHERE ' . $searchQuery . ' AND lots.date_exp > CURDATE()';
 
-    $stmt = dbGetPrepareStmt($connection, $query, [ $text ]);
+    $stmt = dbGetPrepareStmt($connection, $query, $values);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     $result = mysqli_fetch_assoc($result);
@@ -289,24 +286,85 @@ function getLotsAmount(mysqli $connection, string $text): int
 /**
  * Выполняет поиск лотов по запросу.
  * @param mysqli $connection Ресурс соединения.
- * @param string $text Текст запроса.
- * @param int $page Текущая страница пагинации.
+ * @param array $searchInfo Поисковая информация, полученная при валидации запроса.
+ * @param int|false $page Запрашиваемая страница пагинации.
  * @param int $limit Количество лотов на одной странице.
- * @return array Найденные лоты.
+ * @return array Общее количество страниц и найденные лоты для переданной страницы.
  */
-function search(mysqli $connection, string $text, int $page, int $limit): array
+function search(mysqli $connection, array $searchInfo, int $limit, int|false $page): array
 {
+    $textQuery = 'MATCH lots.name, lots.description AGAINST (?)';
+    $catQuery = 'lots.cat_id = ?';
+
+    if ($searchInfo['isTextValid'] && $searchInfo['isCatValid']) {
+        $searchQuery = $catQuery . ' AND ' . $textQuery;
+        $values =
+            [
+                $searchInfo['catId'],
+                $searchInfo['text'],
+            ];
+    } elseif ($searchInfo['isTextValid']) {
+        $searchQuery = $textQuery;
+        $values = [ $searchInfo['text'] ];
+    } elseif ($searchInfo['isCatValid']) {
+        $searchQuery = $catQuery;
+        $values = [ $searchInfo['catId'] ];
+    } else {
+        return [];
+    }
+
+    $lotsAmount = getLotsAmount($connection, $searchQuery, $values);
+
+    $pages = (int)ceil($lotsAmount / $limit);
+
+    if (!$page || $page < 1 || $page > $pages) {
+        $page = 1;
+    }
+
     $offset = ($page - 1) * $limit;
     $query = 'SELECT lots.*, cats.name AS category FROM lots'
-            . ' JOIN cats ON lots.cat_id = cats.id WHERE MATCH lots.name, lots.description AGAINST (?)'
+            . ' JOIN cats ON lots.cat_id = cats.id WHERE ' . $searchQuery
             . ' AND lots.date_exp > CURDATE() ORDER BY lots.created_at DESC LIMIT '
             . $limit . ' OFFSET ' . $offset;
 
-    $stmt = dbGetPrepareStmt($connection, $query, [ $text ]);
+    $stmt = dbGetPrepareStmt($connection, $query, $values);
     mysqli_stmt_execute($stmt);
 
-    $result = mysqli_stmt_get_result($stmt);
-    $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
+    $lots = mysqli_stmt_get_result($stmt);
+    $lots = mysqli_fetch_all($lots, MYSQLI_ASSOC);
 
-    return $result;
+    return
+    [
+        'pages' => $pages,
+        'lots' => $lots,
+    ];
+}
+
+/**
+ * Добавляет ставку к лоту.
+ * @param mysqli $connection Ресурс соединения.
+ * @param array $values Массив из величины ставки, id лота и пользователя.
+ * @return bool `true` - ставка добавлена, `false` - при ошибке.
+ */
+function addBid(mysqli $connection, array $values): bool
+{
+    $query = 'INSERT INTO bids (amount, user_id, lot_id) VALUES (?, ?, ?)';
+    $stmt = dbGetPrepareStmt($connection, $query, $values);
+    return mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Получает ставки пользователя по его id.
+ * @param mysqli $connection Ресурс соединения.
+ * @param int $id Id пользователя.
+ * @return array Массив с информацией о ставках.
+ */
+function getUserBids(mysqli $connection, int $id): array
+{
+    $query = 'SELECT bids.*, lots.created_at AS lot_created, lots.name, lots.img_url, lots.date_exp, lots.winner_id, cats.name AS category, users.contacts FROM bids '
+            . 'JOIN lots ON lots.id = bids.lot_id '
+            . 'JOIN cats ON lots.cat_id = cats.id '
+            . 'JOIN users ON users.id = lots.user_id WHERE bids.user_id = ' . $id . ' '
+            . 'ORDER BY bids.created_at DESC';
+    return getData($connection, $query);
 }

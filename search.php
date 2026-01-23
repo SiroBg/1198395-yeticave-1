@@ -6,31 +6,32 @@ require_once __DIR__ . '/init.php';
  * @var $connection ;
  * @var $getAllCats ;
  * @var $includeTemplate ;
- * @var $getBidsByLotId ;
+ * @var $getAuthUser ;
+ * @var $search ;
+ * @var $validateSearch ;
  */
 
 $cats = getAllCats($connection);
 $user = getAuthUser($connection);
 
-$text = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_SPECIAL_CHARS);
-$text = $text ? trim($text) : '';
+$text = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_SPECIAL_CHARS) ?? false;
+$catId = filter_input(INPUT_GET, 'cat', FILTER_VALIDATE_INT) ?? false;
 
-if (empty($text)) {
+$searchInfo = validateSearch($text, $catId, $cats);
+
+if (!$searchInfo['isTextValid'] && !$searchInfo['isCatValid']) {
     header('Location:/');
     exit();
 }
 
 $lotsPerPage = 9;
-$lotsAmount = getLotsAmount($connection, $text);
-$pages = (int)ceil($lotsAmount / $lotsPerPage);
 
-$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?? false;
 
-if (!$page || $page < 1 || $page > $pages) {
-    $page = 1;
-}
+$searchResult = search($connection, $searchInfo, $lotsPerPage, $page);
 
-$lots = search($connection, $text, $page, $lotsPerPage);
+$pages = $searchResult['pages'];
+$lots = $searchResult['lots'];
 
 $navContent = includeTemplate(
     'nav.php',
@@ -43,10 +44,10 @@ $pageContent = includeTemplate(
     'search.php',
     [
         'navContent' => $navContent,
-        'text' => $text,
         'lots' => $lots,
         'pages' => $pages,
         'page' => $page,
+        'searchInfo' => $searchInfo,
     ],
 );
 
@@ -57,7 +58,7 @@ $layoutContent = includeTemplate(
         'pageContent' => $pageContent,
         'pageTitle' => '"Yeticave" - Поиск.',
         'user' => $user,
-        'search' => $text,
+        'search' => $searchInfo['text'],
     ],
 );
 
