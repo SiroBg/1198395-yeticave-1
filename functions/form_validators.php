@@ -3,11 +3,11 @@
 /**
  * Проверяет данные поискового запроса.
  * @param string|false $text Текст запроса.
- * @param string|false $catId Id категории.
+ * @param int|false $catId Id категории.
  * @param array $cats Список категорий.
  * @return array Массив с данными валидации.
  */
-function validateSearch(string|false $text, string|false $catId, array $cats): array
+function validateSearch(string|false $text, int|false $catId, array $cats): array
 {
     $result =
     [
@@ -77,20 +77,21 @@ function validateFormLogin(array $formInputs, mysqli $connection): array
 
     $result['success'] = $user && password_verify($formInputs['password'], $user['password']);
 
-    if ($result['success']) {
-        $result['user'] =
-            [
-                'id' => $user['id'],
-                'email' => $user['email'],
-                'name' => $user['name'],
-            ];
-    } else {
+    if (!$result['success']) {
         $result['errors'] =
             [
                 'email' => 'Вы ввели неверный email/пароль',
                 'password' => 'Вы ввели неверный email/пароль',
             ];
+        return $result;
     }
+
+    $result['user'] =
+        [
+            'id' => $user['id'],
+            'email' => $user['email'],
+            'name' => $user['name'],
+        ];
 
     return $result;
 }
@@ -106,7 +107,7 @@ function validateFormSignUp(array $fromInputs, mysqli $connection): array
 {
     $rules =
         [
-            'email' => function ($value) use ($connection) {
+            'email' => function ($value) {
                 return validateEmail($value, 128);
             },
             'password' => function ($value) {

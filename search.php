@@ -2,15 +2,6 @@
 
 require_once __DIR__ . '/init.php';
 
-/**
- * @var $connection ;
- * @var $getAllCats ;
- * @var $includeTemplate ;
- * @var $getAuthUser ;
- * @var $search ;
- * @var $validateSearch ;
- */
-
 $cats = getAllCats($connection);
 $user = getAuthUser($connection);
 

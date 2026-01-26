@@ -2,7 +2,7 @@
 
 /**
  * @var string $navContent ;
- * @var string $searchInfo ;
+ * @var array $searchInfo ;
  * @var array $lots ;
  * @var int $pages ;
  * @var int $page ;
@@ -53,7 +53,7 @@
                 </div>
             </div>
         </li>
-        <? endif ; ?>
+        <?php endif ; ?>
         <?php endforeach ; ?>
         <?php endif ; ?>
     </ul>

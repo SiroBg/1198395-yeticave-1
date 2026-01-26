@@ -3,13 +3,6 @@
 require_once __DIR__ . '/init.php';
 require_once __DIR__ . '/functions/mailer.php';
 
-/**
- * @var $getExpiredLots ;
- * @var $setMailer ;
- * @var $setLotWinner ;
- * @var $sendMessage ;
- */
-
 $lots = getExpiredLots($connection);
 
 if (!isset($config['mailer'])) {

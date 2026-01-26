@@ -3,5 +3,8 @@
     "type": "project",
     "require": {
         "symfony/mailer": "*"
+    },
+    "require-dev": {
+        "vimeo/psalm": "^6.14"
     }
 }

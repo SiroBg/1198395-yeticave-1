@@ -75,9 +75,9 @@ function getTimePassedAfterDate(string $date, DateTime $currentDate): string
  * Подключает шаблон, передает туда данные и возвращает итоговый HTML контент
  * @param string $name Путь к файлу шаблона относительно папки templates
  * @param array $data Ассоциативный массив с данными для шаблона
- * @return string Итоговый HTML
+ * @return string|false Итоговый HTML
  */
-function includeTemplate(string $name, array $data = []): string
+function includeTemplate(string $name, array $data = []): string|false
 {
     $name = 'templates/' . $name;
     $result = '';
@@ -130,9 +130,9 @@ function getDtRange(string $date, DateTime $currentDate): array
     $dateDiff = date_diff($currentDate, $endDate);
 
     $resultHours = $dateDiff->days * 24 + $dateDiff->h;
-    $resultHours = str_pad($resultHours, 2, '0', STR_PAD_LEFT);
+    $resultHours = str_pad((string)$resultHours, 2, '0', STR_PAD_LEFT);
 
-    $minutesLeft = str_pad($dateDiff->i, 2, '0', STR_PAD_LEFT);
+    $minutesLeft = str_pad((string)$dateDiff->i, 2, '0', STR_PAD_LEFT);
 
     return [$resultHours, $minutesLeft];
 }

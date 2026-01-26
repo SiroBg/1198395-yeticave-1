@@ -87,7 +87,9 @@ function getLotById(mysqli $connection, int $id): array|false
         . 'WHERE lots.id = ' . $id . ' '
         . 'GROUP BY lots.id';
 
-    if (!$result = mysqli_query($connection, $query)) {
+    $result = mysqli_query($connection, $query);
+
+    if (!$result) {
         error_log(mysqli_error($connection));
         exit('Ошибка при получении данных.');
     }
@@ -120,7 +122,8 @@ function getBidsByLot(mysqli $connection, int $lotId): array
  */
 function getData(mysqli $connection, string $query): array
 {
-    if (!$result = mysqli_query($connection, $query)) {
+    $result = mysqli_query($connection, $query);
+    if (!$result) {
         error_log(mysqli_error($connection));
         exit('Ошибка при получении данных.');
     }
@@ -140,15 +143,19 @@ function addLot(mysqli $connection, array $formInputs): int|false
     $query = 'INSERT INTO lots (created_at, name, cat_id, description, price, bid_step, date_exp, img_url, user_id) VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?)';
     $stmt = dbGetPrepareStmt($connection, $query, $formInputs);
 
-    mysqli_stmt_execute($stmt);
+    if (!mysqli_stmt_execute($stmt)) {
+        return false;
+    }
+
     $lotId = mysqli_insert_id($connection);
+    $lotId = (int)$lotId;
     return $lotId > 0 ? $lotId : false;
 }
 
 /**
  * Получает информацию о пользователе по переданному email.
- * @var mysqli $connection Ресурс соединения.
- * @var string $email Строка с email.
+ * @param mysqli $connection Ресурс соединения.
+ * @param string $email Строка с email.
  *
  * @return array|false Данные о пользователе или false, если пользователь не найден.
  */
@@ -156,7 +163,11 @@ function getUser(mysqli $connection, string $email): array|false
 {
     $query = 'SELECT * FROM users WHERE users.email = ?';
     $stmt = dbGetPrepareStmt($connection, $query, [$email]);
-    mysqli_stmt_execute($stmt);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        return false;
+    }
+
     $result = mysqli_stmt_get_result($stmt);
 
     return mysqli_fetch_assoc($result) ?? false;
@@ -186,15 +197,19 @@ function getAuthUser(mysqli $connection): array|false
 /**
  * Проверяет, есть ли в БД переданный email.
  * @return bool True, если такого email еще нет, false - если уже есть.
- * @var mysqli $connection Ресурс соединения.
- * @var string $email Строка с email.
+ * @param mysqli $connection Ресурс соединения.
+ * @param string $email Строка с email.
  */
 function isEmailUnique(mysqli $connection, string $email): bool
 {
     $query = 'SELECT EXISTS(SELECT users.email FROM users WHERE users.email = ?) AS is_unique';
 
     $stmt = dbGetPrepareStmt($connection, $query, [$email]);
-    mysqli_stmt_execute($stmt);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        return false;
+    }
+
     $result = mysqli_stmt_get_result($stmt);
     $result = mysqli_fetch_assoc($result);
 
@@ -249,10 +264,8 @@ function dbGetPrepareStmt(mysqli $link, string $sql, array $data = []): mysqli_s
 
             if (is_int($value)) {
                 $type = 'i';
-            } else {
-                if (is_double($value)) {
-                    $type = 'd';
-                }
+            } elseif (is_double($value)) {
+                $type = 'd';
             }
 
             $types .= $type;
@@ -285,7 +298,11 @@ function getMatchedLotsCount(mysqli $connection, string $searchQuery, array $val
     $query = 'SELECT COUNT(lots.id) AS amount FROM lots WHERE ' . $searchQuery . ' AND lots.date_exp > CURDATE()';
 
     $stmt = dbGetPrepareStmt($connection, $query, $values);
-    mysqli_stmt_execute($stmt);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        return 0;
+    }
+
     $result = mysqli_stmt_get_result($stmt);
     $result = mysqli_fetch_assoc($result);
 
@@ -356,10 +373,11 @@ function search(mysqli $connection, array $searchInfo, int $limit, int|false $pa
             . $limit . ' OFFSET ' . $offset;
 
     $stmt = dbGetPrepareStmt($connection, $query, $values);
-    mysqli_stmt_execute($stmt);
 
-    $lots = mysqli_stmt_get_result($stmt);
-    $result['lots'] = mysqli_fetch_all($lots, MYSQLI_ASSOC);
+    if (mysqli_stmt_execute($stmt)) {
+        $lots = mysqli_stmt_get_result($stmt);
+        $result['lots'] = mysqli_fetch_all($lots, MYSQLI_ASSOC);
+    }
 
     return $result;
 }

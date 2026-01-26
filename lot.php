@@ -2,18 +2,6 @@
 
 require_once __DIR__ . '/init.php';
 
-/**
- * @var $connection ;
- * @var $getAllCats ;
- * @var $includeTemplate ;
- * @var $getBidsByLot ;
- * @var $validateFormBids ;
- * @var $addBid ;
- * @var $getAuthUser ;
- * @var $showError ;
- * @var $showBids ;
- */
-
 $cats = getAllCats($connection);
 $lotId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 $user = getAuthUser($connection);
