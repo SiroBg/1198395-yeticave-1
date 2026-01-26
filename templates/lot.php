@@ -16,23 +16,23 @@
 <main>
     <?= $navContent; ?>
     <section class="lot-item container">
-        <h2><?= $lot['name']; ?></h2>
+        <h2><?= $lot['name'] ?? ''; ?></h2>
         <div class="lot-item__content">
             <div class="lot-item__left">
                 <div class="lot-item__image">
                     <img
-                        src="<?= $lot['img_url']; ?>"
+                        src="<?= $lot['img_url'] ?? ''; ?>"
                         width="730"
                         height="548"
-                        alt="<?= $lot['name']; ?>"
+                        alt="<?= $lot['name'] ?? ''; ?>"
                     />
                 </div>
-                <p class="lot-item__category">Категория: <span><?= $lot['category']; ?></span></p>
-                <p class="lot-item__description"><?= $lot['description']; ?></p>
+                <p class="lot-item__category">Категория: <span><?= $lot['category'] ?? ''; ?></span></p>
+                <p class="lot-item__description"><?= $lot['description'] ?? ''; ?></p>
             </div>
             <div class="lot-item__right">
                 <div class="lot-item__state">
-                    <?php [$hours, $minutes] = getDtRange($lot['date_exp'], new DateTime()); ?>
+                    <?php [$hours, $minutes] = getDtRange($lot['date_exp'] ?? '', new DateTime()); ?>
                     <?php if ($hours === '00' && $minutes === '00' || isset($lot['winner_id'])) : ?>
                     <p>Торги окончены.</p>
                     <?php else : ?>
@@ -52,16 +52,16 @@
                     <?php if ($showBids): ?>
                     <form
                         class="lot-item__form"
-                        action="/lot.php?id=<?= $lot['id'] ; ?>"
+                        action="/lot.php?id=<?= $lot['id'] ?? '' ; ?>"
                         method="post"
                         autocomplete="off"
                     >
                         <p class="lot-item__form-item form__item <?= empty($errors) ? '' : 'form__item--invalid' ; ?>">
                             <label for="cost">Ваша ставка</label>
                             <input id="cost" type="text" name="cost"
-                                   placeholder="<?= $minBid ; ?>" value="<?= empty($formInputs) ? '' : $formInputs['cost'] ; ?>"/>
+                                   placeholder="<?= $minBid ; ?>" value="<?= empty($formInputs) ? '' : $formInputs['cost'] ?? '' ; ?>"/>
                             <?php if (!empty($errors)): ?>
-                            <span class="form__error"><?= $errors['cost'] ; ?></span>
+                            <span class="form__error"><?= $errors['cost'] ?? '' ; ?></span>
                             <?php endif ; ?>
                         </p>
                         <button type="submit" class="button">Сделать ставку</button>
@@ -72,6 +72,7 @@
                     <h3>История ставок (<span><?= count($bids); ?></span>)</h3>
                     <table class="history__list">
                         <?php foreach ($bids as $bid) : ?>
+                            <?php if (isset($bid['user_name'], $bid['amount'], $bid['created_at'])) : ?>
                             <tr class="history__item">
                                 <td class="history__name"><?= $bid['user_name']; ?></td>
                                 <td class="history__price"><?= formatPrice($bid['amount']); ?></td>
@@ -80,6 +81,7 @@
                                     new DateTime(),
                                 ); ?></td>
                             </tr>
+                            <?php endif ; ?>
                         <?php endforeach; ?>
                     </table>
                 </div>
