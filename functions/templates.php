@@ -36,11 +36,14 @@ function getNounPluralForm(int $number, string $one, string $two, string $many):
 }
 
 /**
- * Принимает дату и вычисляет, сколько времени прошло после нее. В зависимости от количества времени, возвращает результат
+ * Принимает дату и вычисляет, сколько времени прошло после нее.
+ *
+ * В зависимости от количества времени, возвращает результат
  * в разном формате:
  *  - больше суток - дату и время создания
  *  - меньше часа - количество прошедших минут
- *  - больше часа  - количество часов
+ *  - больше часа - количество часов
+ *
  * @param string $date Дата в строковом формате (ГГГГ-ММ-ДД)
  * @param DateTime $currentDate Текущая дата
  *
@@ -62,22 +65,24 @@ function getTimePassedAfterDate(string $date, DateTime $currentDate): string
         $dateDiff->h === 1 => 'Час назад',
         $dateDiff->i === 1 => 'Минуту назад',
         $dateDiff->h < 1 => $dateDiff->i . ' ' . getNounPluralForm(
-            $dateDiff->i,
-            'минуту',
-            'минуты',
-            'минут',
-        ) . ' назад',
+                $dateDiff->i,
+                'минуту',
+                'минуты',
+                'минут',
+            ) . ' назад',
         default => $dateDiff->h . ' ' . getNounPluralForm($dateDiff->h, 'час', 'часа', 'часов') . ' назад',
     };
 }
 
 /**
  * Подключает шаблон, передает туда данные и возвращает итоговый HTML контент
+ *
  * @param string $name Путь к файлу шаблона относительно папки templates
  * @param array $data Ассоциативный массив с данными для шаблона
- * @return string Итоговый HTML
+ *
+ * @return string|false Итоговый HTML
  */
-function includeTemplate(string $name, array $data = []): string
+function includeTemplate(string $name, array $data = []): string|false
 {
     $name = 'templates/' . $name;
     $result = '';
@@ -95,7 +100,9 @@ function includeTemplate(string $name, array $data = []): string
 
 /**
  * Форматирует цену товара, добавляя знак рубля в конце и отступы, если число многозначное
+ *
  * @param int $price Цена товара в целочисленном формате
+ *
  * @return string Отформатированная цена
  */
 function formatPrice(int $price): string
@@ -104,14 +111,16 @@ function formatPrice(int $price): string
         $price > 1000
             ? number_format($price, 0, '', ' ')
             : $price
-    )
+        )
         . '<b class="rub">р</b>';
 }
 
 /**
  * Принимает будущую дату и вычисляет, сколько осталось целых часов и минут до этой даты от текущей
+ *
  * @param string $date Будущая дата в строковом формате (ГГГГ-ММ-ДД)
  * @param DateTime $currentDate Текущая дата
+ *
  * @return string[] Массив, в котором первый элемент - часы, второй - минуты
  */
 function getDtRange(string $date, DateTime $currentDate): array
@@ -130,20 +139,24 @@ function getDtRange(string $date, DateTime $currentDate): array
     $dateDiff = date_diff($currentDate, $endDate);
 
     $resultHours = $dateDiff->days * 24 + $dateDiff->h;
-    $resultHours = str_pad($resultHours, 2, '0', STR_PAD_LEFT);
+    $resultHours = str_pad((string)$resultHours, 2, '0', STR_PAD_LEFT);
 
-    $minutesLeft = str_pad($dateDiff->i, 2, '0', STR_PAD_LEFT);
+    $minutesLeft = str_pad((string)$dateDiff->i, 2, '0', STR_PAD_LEFT);
 
     return [$resultHours, $minutesLeft];
 }
 
 /**
  * Показывает шаблон ошибки с заданным кодом и сообщением.
+ *
  * @param int $code Код ошибки.
  * @param string $message Сообщение ошибки.
  * @param array $cats Категории (необходимы для отображения навигации).
  * @param array|false $user Информация о пользователе (необходима для шаблона).
+ *
+ * @return void
  */
+
 function showError(int $code, string $message, array $cats, array|false $user): void
 {
     $errorTitle = 'Ошибка ' . $code;
@@ -180,12 +193,14 @@ function showError(int $code, string $message, array $cats, array|false $user): 
 
 /**
  * Вычисляет, показывать ставки на странице или нет.
+ *
  * @param array|false $user Залогинен ли пользователь. Если нет, ставки не показываются.
  * @param array $lot Информация о лоте. Если истек срок ставок или лот уже был выигран, ставки не показываются.
  * @param array $bids Информация о ставках. Если последняя ставка была сделана залогиненым пользователем, ставки не показываются.
+ *
  * @return bool `true` - показывать ставки, `false` - нет.
  */
-function showBids(array|false $user, array $lot, array $bids)
+function showBids(array|false $user, array $lot, array $bids): bool
 {
     if (!isset($lot['date_exp'], $lot['user_id'])) {
         error_log('Нет необходимых ключей в переданном массиве lot');

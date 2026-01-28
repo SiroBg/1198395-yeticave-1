@@ -4,34 +4,31 @@ require_once __DIR__ . '/init.php';
 
 /**
  * @var $connection ;
- * @var $getAllCats ;
- * @var $includeTemplate ;
- * @var $validateFormAddLot ;
- * @var $getAuthUser ;
- * @var $uploadImg ;
- * @var $addLot ;
- * @var $showError ;
  */
 
 $cats = getAllCats($connection);
 $user = getAuthUser($connection);
 
-if ($user === false) {
-    showError(403, 'Войдите на сайт, чтобы добавить свой лот', $cats, $user);
+if ($user === false || !isset($user['id'])) {
+    showError(403, 'Войдите на сайт, чтобы добавить свой лот', $cats, false);
 }
 
 $formInputs = [];
 $errors = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $formInputs = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+
+    if (is_null($formInputs) || $formInputs === false) {
+        exit('Ошибка получения данных формы');
+    }
 
     $errors = validateFormAddLot($formInputs, $cats);
 
     if (empty($errors)) {
         $uploadStatus = uploadImg('lot-img');
 
-        if (isset($uploadStatus['success'], $uploadStatus['imgPath'], $user['id']) && $uploadStatus['success']) {
+        if (isset($uploadStatus['success'], $uploadStatus['imgPath']) && $uploadStatus['success']) {
             $formInputs['lot-img'] = $uploadStatus['imgPath'];
             $formInputs['userId'] = $user['id'];
             $lotId = addLot($connection, $formInputs);

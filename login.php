@@ -4,13 +4,6 @@ require_once __DIR__ . '/init.php';
 
 /**
  * @var $connection ;
- * @var $getAllCats ;
- * @var $includeTemplate ;
- * @var $authUser ;
- * @var $getUser ;
- * @var $validateFormLogin ;
- * @var $getAuthUser ;
- * @var $showError ;
  */
 
 $cats = getAllCats($connection);
@@ -23,8 +16,13 @@ if ($user !== false) {
 $formInputs = [];
 $errors = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $formInputs = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+
+    if (is_null($formInputs) || $formInputs === false) {
+        exit('Ошибка получения данных формы.');
+    }
+
     $validStatus = validateFormLogin($formInputs, $connection);
 
     if (isset($validStatus['success'], $validStatus['user']) && $validStatus['success']) {

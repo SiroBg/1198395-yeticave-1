@@ -1,14 +1,10 @@
 <?php
 
 require_once __DIR__ . '/init.php';
-require_once __DIR__ .'/getWinner.php';
+require_once __DIR__ . '/getWinner.php';
 
 /**
  * @var $connection ;
- * @var $getRecentLots ;
- * @var $getAllCats ;
- * @var $includeTemplate ;
- * @var $getAuthUser ;
  */
 
 $lots = getRecentLots($connection);
